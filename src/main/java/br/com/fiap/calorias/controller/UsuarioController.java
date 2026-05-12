@@ -4,6 +4,7 @@ import br.com.fiap.calorias.dto.UsuarioCadastroDTO;
 import br.com.fiap.calorias.dto.UsuarioExibicaoDTO;
 import br.com.fiap.calorias.model.Usuario;
 import br.com.fiap.calorias.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,10 @@ public class UsuarioController {
 
     @PostMapping("/usuarios")
     @ResponseStatus(HttpStatus.CREATED)
-    public UsuarioExibicaoDTO salvar(@RequestBody UsuarioCadastroDTO usuarioCadastroDTO) {
+    public UsuarioExibicaoDTO salvar(
+            @Valid
+            @RequestBody UsuarioCadastroDTO usuarioCadastroDTO
+    ) {
         return usuarioService.salvarUsuario(usuarioCadastroDTO);
     }
 
@@ -48,7 +52,10 @@ public class UsuarioController {
 
     @PutMapping("/usuarios")
     @ResponseStatus(HttpStatus.OK)
-    public Usuario atualizar(@RequestBody Usuario usuario) {
+    public Usuario atualizar(
+            @Valid
+            @RequestBody Usuario usuario
+    ) {
         return usuarioService.atualizar(usuario);
     }
 }
