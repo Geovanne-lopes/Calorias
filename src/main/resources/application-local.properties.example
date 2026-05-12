@@ -1,0 +1,6 @@
+# Copie este arquivo para application-local.properties e preencha com seus dados.
+# O arquivo application-local.properties não é enviado ao Git.
+
+spring.datasource.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
+spring.datasource.username=SEU_USUARIO_RM
+spring.datasource.password=SUA_SENHA
