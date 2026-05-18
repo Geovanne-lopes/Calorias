@@ -4,11 +4,13 @@ import br.com.fiap.calorias.dto.AlimentoCadastroDTO;
 import br.com.fiap.calorias.dto.AlimentoExibicaoDTO;
 import br.com.fiap.calorias.model.Alimento;
 import br.com.fiap.calorias.repository.AlimentoRepository;
+import br.com.fiap.calorias.exception.AlimentoNaoEncontradoException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -42,16 +44,14 @@ public class AlimentoService {
         if (alimentoOptional.isPresent()){
             return new AlimentoExibicaoDTO(alimentoOptional.get());
         } else {
-            throw new RuntimeException("Alimento não existe!");
+            throw new AlimentoNaoEncontradoException("Alimento não existe!");
         }
     }
 
-    public List<AlimentoExibicaoDTO> listarTodos(){
+    public Page<AlimentoExibicaoDTO> listarTodos(Pageable paginacao){
         return alimentoRepository
-                .findAll()
-                .stream()
-                .map(AlimentoExibicaoDTO::new)
-                .toList();
+                .findAll(paginacao)
+                .map(AlimentoExibicaoDTO::new);
     }
 
     public void excluir(Long id){
@@ -61,7 +61,7 @@ public class AlimentoService {
         if (alimentoOptional.isPresent()){
             alimentoRepository.delete(alimentoOptional.get());
         } else {
-            throw new RuntimeException("Alimento não encontrado!");
+            throw new AlimentoNaoEncontradoException("Alimento não encontrado!");
         }
     }
 
@@ -83,8 +83,46 @@ public class AlimentoService {
 
             return new AlimentoExibicaoDTO(alimentoRepository.save(alimento));
         } else {
-            throw new RuntimeException("Alimento não encontrado!");
+            throw new AlimentoNaoEncontradoException("Alimento não encontrado!");
         }
+    }
+
+    public AlimentoExibicaoDTO buscarPorNome(String nome){
+        Optional<Alimento> alimentoOptional = alimentoRepository.buscarPorNome(nome);
+
+        if (alimentoOptional.isPresent()){
+            return new AlimentoExibicaoDTO(alimentoOptional.get());
+        } else {
+            throw new RuntimeException("Alimento procurado não existe!");
+        }
+    }
+
+    public Page<AlimentoExibicaoDTO> listarAlimentosPorFaixaDeCalorias(
+            Double caloriaMinima,
+            Double caloriaMaxima,
+            Pageable paginacao
+    ) {
+        return alimentoRepository
+                .listarAlimentosPorFaixaDeCalorias(caloriaMinima, caloriaMaxima, paginacao)
+                .map(AlimentoExibicaoDTO::new);
+    }
+
+    public Page<AlimentoExibicaoDTO> listarPorNomeComecandoCom(String prefixo, Pageable paginacao) {
+        return alimentoRepository
+                .listarPorNomeComecandoCom(prefixo, paginacao)
+                .map(AlimentoExibicaoDTO::new);
+    }
+
+    public Page<AlimentoExibicaoDTO> listarPorGorduraInferiorA(Double limite, Pageable paginacao) {
+        return alimentoRepository
+                .listarPorGorduraInferiorA(limite, paginacao)
+                .map(AlimentoExibicaoDTO::new);
+    }
+
+    public Page<AlimentoExibicaoDTO> listarTotalCaloriasMenorQue(Double calorias, Pageable paginacao) {
+        return alimentoRepository
+                .findByTotalCaloriasLessThan(calorias, paginacao)
+                .map(AlimentoExibicaoDTO::new);
     }
 
     public Double calcularCalorias(Double proteinas, Double carboidratos, Double gorduras){
