@@ -9,6 +9,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -21,8 +23,12 @@ public class UsuarioService {
 
     public UsuarioExibicaoDTO salvarUsuario(UsuarioCadastroDTO usuarioCadastroDTO) {
 
+        String senhaCriptografada = new 
+            BCryptPasswordEncoder().encode(usuarioCadastroDTO.senha());
+
         Usuario usuario = new Usuario();
         BeanUtils.copyProperties(usuarioCadastroDTO, usuario);
+        usuario.setSenha(senhaCriptografada);
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
         return new UsuarioExibicaoDTO(usuarioSalvo);
     }
@@ -70,10 +76,10 @@ public class UsuarioService {
     }
 
     public UsuarioExibicaoDTO buscarPorEmail(String email) {
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        UserDetails userDetails = usuarioRepository.findByEmail(email);
 
-        if (usuarioOptional.isPresent()) {
-            return new UsuarioExibicaoDTO(usuarioOptional.get());
+        if (userDetails != null) {
+            return new UsuarioExibicaoDTO((Usuario) userDetails);
         } else {
             throw new UsuarioNaoEncontradoException("Usuário não existe no banco de dados!");
         }
